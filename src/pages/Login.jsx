@@ -51,7 +51,7 @@ const Login = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, );
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -59,34 +59,41 @@ const Login = () => {
     setError(null);
     
     try {
-      // Intentar iniciar sesión con Supabase
-      let success = false;
-      
       if (supabase) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
-        if (!error) {
-          success = true;
-        } else {
-          setError(error.message);
+        if (error) throw error;
+        
+        // Verificar el rol del usuario
+        const { data: userData, error: roleError } = await supabase
+          .from('dashboard_users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (roleError) {
+          throw new Error('Usuario no encontrado en dashboard_users');
         }
-      } else {
-        setError("Supabase no está configurado. Use el modo desarrollo.");
-      }
-      
-      if (success) {
+        
+        // Guardar el rol para consultas rápidas
+        localStorage.setItem('user_role', userData.role);
+        
+        // Redirigir a la página principal
         navigate('/');
+      } else {
+        throw new Error('Cliente Supabase no inicializado');
       }
     } catch (error) {
-      setError("Error al iniciar sesión: " + error.message);
+      console.error('Error en login:', error);
+      setError(error.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
   };
-
+  
   // Modo desarrollador - Acceso rápido (ahora solo accesible con combinación de teclas)
   const handleDevLogin = () => {
     localStorage.setItem('dev_mode', 'true');

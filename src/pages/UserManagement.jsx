@@ -11,8 +11,7 @@ const UserManagement = () => {
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
-    role: 'admin',
-    clinic_id: '',
+    name: ''
   });
   const [clinics, setClinics] = useState([]);
   const [userRole, setUserRole] = useState(null);
@@ -137,92 +136,73 @@ const UserManagement = () => {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
     setSuccess(null);
     
     try {
-      // Verificar que todos los campos obligatorios estén completos
-      if (!newUser.email || !newUser.password || (newUser.role === 'admin' && !newUser.clinic_id)) {
-        setError('Por favor completa todos los campos requeridos');
+      if (!newUser.email || !newUser.password) {
+        setError('Email y contraseña son obligatorios');
         return;
       }
-  
-      setLoading(true);
       
-      // Generar un nombre por defecto a partir del email
-      const defaultName = newUser.email.split('@')[0];
+      const displayName = newUser.name || newUser.email.split('@')[0];
       
-      // Solo actualizar UI en modo desarrollo, pero TAMBIÉN crear usuario real
-      const isDevMode = localStorage.getItem('dev_mode') === 'true';
-      
-      // Guarda en simulación local para UI inmediata en dev mode
-      if (isDevMode) {
-        const clinic = clinics.find(c => c.id === parseInt(newUser.clinic_id));
-        const newUserObj = {
-          id: `temp-${Date.now()}`, // ID temporal
-          email: newUser.email,
-          role: newUser.role,
-          name: defaultName, // Añadir nombre
-          clinic_name: clinic ? clinic.name : 'Sin clínica'
-        };
-        
-        // Actualizar UI localmente para feedback inmediato
-        setUsers(prev => [...prev, newUserObj]);
-      }
-      
-      // SIEMPRE intentar crear el usuario real en Supabase
-      try {
-        // En producción, usar la función RPC para crear usuarios
-        const { data, error: createError } = await supabase.rpc('create_dashboard_user', {
-          p_email: newUser.email,
-          p_password: newUser.password,
-          p_role: newUser.role,
-          p_clinic_id: newUser.role === 'admin' ? parseInt(newUser.clinic_id) : null,
-          p_name: defaultName  // Pasar el nombre generado
-        });
-        
-        if (createError) throw createError;
-        
-        setSuccess(`Usuario ${newUser.email} creado exitosamente en Supabase`);
-        
-        // Recargar la lista de usuarios
-        const { data: updatedUsers, error: fetchError } = await supabase
-          .from('dashboard_users')
-          .select('*, clinics(name)');
-          
-        if (fetchError) throw fetchError;
-        
-        // Procesar los datos para tener clinic_name accesible directamente
-        const processedUsers = updatedUsers?.map(user => ({
-          ...user,
-          clinic_name: user.clinics?.name || null
-        }));
-        
-        setUsers(processedUsers || []);
-      } catch (supabaseError) {
-        console.error('Error en creación de usuario Supabase:', supabaseError);
-        
-        // Si estamos en modo dev, mostrar mensaje distinto
-        if (isDevMode) {
-          setSuccess(`Usuario ${newUser.email} simulado en UI (modo desarrollo), pero NO creado en Supabase: ${supabaseError.message}`);
-        } else {
-          setError(`Error al crear usuario: ${supabaseError.message}`);
-          // Si no es dev mode, quitarlo de la UI también
-          setUsers(prev => prev.filter(u => u.email !== newUser.email));
+      // 1. Crear el usuario usando la API de autenticación nativa
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            is_dashboard_user: true,
+            role: 'monitor',
+            name: displayName
+          }
         }
+      });
+      
+      if (authError) throw authError;
+      
+      // 2. Usuario creado correctamente en auth.users, ahora añadirlo a dashboard_users
+      const { error: insertError } = await supabase
+      .from('dashboard_users')
+      .upsert({
+        id: authData.user.id,
+        email: newUser.email,
+        role: 'monitor',
+        name: displayName,
+        updated_at: new Date()
+      }, {
+        onConflict: 'id'
+      });
+      
+      if (insertError) throw insertError;
+      
+      // 3. Confirmar el email para que pueda iniciar sesión de inmediato
+      const { error: adminError } = await supabase.auth.admin.updateUserById(
+        authData.user.id, 
+        { email_confirm: true }
+      );
+      
+      // Si hay error al confirmar email, lo registramos pero no bloqueamos
+      if (adminError) {
+        console.warn('No se pudo confirmar el email automáticamente:', adminError);
       }
       
-      // Limpiar formulario
+      setSuccess(`Usuario ${newUser.email} creado exitosamente`);
+      
+      // Limpiar el formulario
       setNewUser({
         email: '',
         password: '',
-        role: 'admin',
-        clinic_id: '',
+        name: ''
       });
       
+      // Recargar la lista de usuarios
+      fetchUsers();
     } catch (error) {
-      console.error('Error en proceso de creación:', error);
-      setError(error.message || 'Error al crear usuario');
+      console.error('Error creando usuario:', error);
+      setError(`Error al crear usuario: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -289,46 +269,21 @@ const UserManagement = () => {
             </div>
             
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Rol
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Nombre (opcional)
               </label>
-              <select
-                name="role"
-                id="role"
-                value={newUser.role}
+              <input
+                type="text"
+                name="name"
+                id="name"
+                value={newUser.name || ''}
                 onChange={handleInputChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-              >
-                <option value="admin">Administrador</option>
-                <option value="user">Usuario</option>
-                <option value="developer">Desarrollador</option>
-              </select>
+              />
             </div>
             
-            {newUser.role === 'admin' && (
-              <div>
-                <label htmlFor="clinic_id" className="block text-sm font-medium text-gray-700">
-                  Clínica
-                </label>
-                <select
-                  name="clinic_id"
-                  id="clinic_id"
-                  value={newUser.clinic_id}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
-                >
-                  <option value="">Seleccionar Clínica</option>
-                  {clinics.map(clinic => (
-                    <option key={clinic.id} value={clinic.id}>
-                      {clinic.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            
             <Button type="submit" variant="primary" className="w-full">
-              Crear Usuario
+              Crear Usuario Monitor
             </Button>
           </form>
         </Card>
