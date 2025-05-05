@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename)
 export default defineConfig({
   plugins: [react()],
   // Add these two lines
-  base: '/',
+  base: '/clinicas-dashboard/',
   publicDir: 'public',
   css: {
     postcss: './postcss.config.js',

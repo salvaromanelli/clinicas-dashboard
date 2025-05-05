@@ -1,12 +1,31 @@
-# React + Vite
+# Dashboard de Administración de Clínicas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dashboard de administración para la gestión de usuarios y clínicas desarrollado con React y Supabase.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Gestión de usuarios (administradores, médicos, desarrolladores)
+- Asignación de usuarios a clínicas
+- Interfaz adaptativa
+- Autenticación segura
+- Separación de usuarios de dashboard y app móvil
 
-## Expanding the ESLint configuration
+## Tecnologías utilizadas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Vite
+- Supabase (Backend as a Service)
+- TailwindCSS
+
+## Configuración del proyecto
+
+1. Clona este repositorio
+2. Instala las dependencias con `npm install`
+3. Crea un archivo `.env` basado en `.env.example`
+4. Ejecuta el proyecto con `npm run dev`
+
+## Estructura de la base de datos
+
+- `auth.users`: Usuarios de autenticación
+- `dashboard_users`: Usuarios del panel de administración
+- `clinics`: Información de las clínicas
