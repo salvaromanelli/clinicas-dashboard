@@ -22,11 +22,6 @@ export { supabase };
 // Verificar si el usuario está autenticado
 export const isAuthenticated = async () => {
   try {
-    // Modo desarrollo - siempre autenticado si está activado
-    if (localStorage.getItem('dev_mode') === 'true') {
-      console.log('Using development authentication mode');
-      return true;
-    }
     
     // Verificar con Supabase si está disponible
     if (supabase) {
@@ -47,11 +42,7 @@ export const isAuthenticated = async () => {
 // Obtener el rol del usuario actual
 export const getUserRole = async () => {
   try {
-    // Si es modo desarrollador
-    if (localStorage.getItem('dev_mode') === 'true') {
-      return localStorage.getItem('user_role') || 'developer';
-    }
-    
+
     // Verificar rol en Supabase si está disponible
     if (supabase) {
       const { data, error } = await supabase.auth.getSession();

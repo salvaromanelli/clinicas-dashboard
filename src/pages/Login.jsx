@@ -7,52 +7,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [devModeHint, setDevModeHint] = useState(false);
-  const [secretKeys, setSecretKeys] = useState([]);
   const navigate = useNavigate();
 
   // Registrar la combinación de teclas para el modo desarrollador
-  useEffect(() => {
-    // Conjunto para almacenar teclas presionadas actualmente
-    const pressedKeys = new Set();
-    
-    const handleKeyDown = (e) => {
-      // Agregamos la tecla al conjunto
-      pressedKeys.add(e.key.toLowerCase());
-      setSecretKeys([...pressedKeys]);
-      
-      // Combinación secreta: Ctrl + Shift + D
-      if (
-        pressedKeys.has('control') && 
-        pressedKeys.has('shift') && 
-        pressedKeys.has('d')
-      ) {
-        e.preventDefault();
-        handleDevLogin();
-        
-        // Mostrar indicador temporal
-        setDevModeHint(true);
-        setTimeout(() => setDevModeHint(false), 2000);
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      // Eliminamos la tecla del conjunto cuando se libera
-      pressedKeys.delete(e.key.toLowerCase());
-      setSecretKeys([...pressedKeys]);
-    };
-
-    // Agregar event listeners
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    // Limpiar event listeners al desmontar
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, );
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,12 +51,6 @@ const Login = () => {
     }
   };
   
-  // Modo desarrollador - Acceso rápido (ahora solo accesible con combinación de teclas)
-  const handleDevLogin = () => {
-    localStorage.setItem('dev_mode', 'true');
-    localStorage.setItem('user_role', 'developer');
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
@@ -145,22 +96,7 @@ const Login = () => {
           </div>
         )}
 
-        {/* Indicador temporal de modo desarrollador activado */}
-        {devModeHint && (
-          <div className="rounded-md bg-green-50 p-4 animate-pulse">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-800">Modo desarrollador activado</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <input type="hidden" name="remember" defaultValue="true" />
           <div className="rounded-md shadow-sm -space-y-px">
