@@ -21,7 +21,7 @@ Dashboard de administración para la gestión de usuarios y clínicas desarrolla
 
 A continuación se muestran algunas capturas de pantalla del dashboard:
 
-![Screenshot 1](image1)
+![Vista principal](https://raw.githubusercontent.com/salvaromanelli/clinicas-dashboard/main/main.png)
 ![Screenshot 2](image2)
 ![Screenshot 3](image3)
 ![Screenshot 4](image4)
