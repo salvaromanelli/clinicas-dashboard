@@ -22,9 +22,9 @@ Dashboard de administración para la gestión de usuarios y clínicas desarrolla
 A continuación se muestran algunas capturas de pantalla del dashboard:
 
 ![Vista principal](https://github.com/salvaromanelli/clinicas-dashboard/blob/main/main.png)
-![Screenshot 2](image2)
-![Screenshot 3](image3)
-![Screenshot 4](image4)
+![Screenshot 2](https://github.com/salvaromanelli/clinicas-dashboard/blob/main/metrics.png)
+![Screenshot 3](https://github.com/salvaromanelli/clinicas-dashboard/blob/main/metrics2.png)
+![Screenshot 4](https://github.com/salvaromanelli/clinicas-dashboard/blob/main/chatbot.png)
 
 ## Configuración del proyecto
 
