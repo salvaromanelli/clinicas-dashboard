@@ -17,6 +17,15 @@ Dashboard de administración para la gestión de usuarios y clínicas desarrolla
 - Supabase (Backend as a Service)
 - TailwindCSS
 
+## Capturas de pantalla
+
+A continuación se muestran algunas capturas de pantalla del dashboard:
+
+![Screenshot 1](image1)
+![Screenshot 2](image2)
+![Screenshot 3](image3)
+![Screenshot 4](image4)
+
 ## Configuración del proyecto
 
 1. Clona este repositorio
